@@ -1,13 +1,13 @@
 package ru.fefu.splitmate.ui.screens
 
 import androidx.compose.runtime.Composable
-import ru.fefu.splitmate.ui.components.HomeScreen
+import ru.fefu.splitmate.ui.components.WelcomeScreenContent
 
 @Composable
-fun HomeScreen(
+fun WelcomeScreen(
     onNavigateToInput: () -> Unit
 ) {
-    HomeScreen(
+    WelcomeScreenContent(
         onStartClicked = onNavigateToInput
     )
 }

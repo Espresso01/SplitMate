@@ -1,14 +1,14 @@
 package ru.fefu.splitmate.model
 
-sealed interface SplitMateUiState {
-    data object Loading : SplitMateUiState
+sealed interface UiState {
+
     data class Input(
         val totalAmount: String = "",
         val peopleCount: String = "",
         val tipPercentage: String = ""
-    ) : SplitMateUiState
+    ) : UiState
 
     data class Result(
         val calculation: SplitCalculation
-    ) : SplitMateUiState
+    ) : UiState
 }

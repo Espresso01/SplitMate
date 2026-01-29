@@ -1,69 +1,54 @@
 package ru.fefu.splitmate.navigation
 
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavType
+import androidx.compose.runtime.Composable
+import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
-import androidx.navigation.navigation
+import androidx.navigation.compose.rememberNavController
+import ru.fefu.splitmate.ui.screens.BillInputScreen
+import ru.fefu.splitmate.ui.screens.SplitResultScreen
+import ru.fefu.splitmate.ui.screens.WelcomeScreen
 import ru.fefu.splitmate.viewmodel.SplitMateViewModel
-import ru.fefu.splitmate.ui.screens.HomeScreen
-import ru.fefu.splitmate.ui.screens.InputScreen
-import ru.fefu.splitmate.ui.screens.ResultScreen
 
-sealed class Screen(val route: String) {
-    object Home : Screen("home")
-    object Input : Screen("input")
-    object Result : Screen("result/{calcId}") {
-        fun createRoute(calcId: String) = "result/$calcId"
-    }
+private object Routes {
+    const val WELCOME = "welcome"
+    const val INPUT = "input"
+    const val RESULT = "result"
 }
 
-fun NavGraphBuilder.splitMateGraph(
-    navController: NavController,
-    viewModel: SplitMateViewModel
-) {
-    navigation(
-        startDestination = Screen.Home.route,
-        route = "root"
+@Composable
+fun SplitMateNavigation(viewModel: SplitMateViewModel) {
+    val navController = rememberNavController()
+
+    NavHost(
+        navController = navController,
+        startDestination = Routes.WELCOME
     ) {
-        composable(Screen.Home.route) {
-            HomeScreen(
-                onNavigateToInput = {
-                    navController.navigate(Screen.Input.route)
+
+        composable(Routes.WELCOME) {
+            WelcomeScreen {
+                navController.navigate(Routes.INPUT)
+            }
+        }
+
+        composable(Routes.INPUT) {
+            BillInputScreen(
+                viewModel = viewModel,
+                onCalculate = {
+                    viewModel.calculate()
+                    navController.navigate(Routes.RESULT)
                 }
             )
         }
 
-        composable(Screen.Input.route) {
-            InputScreen(
+        composable(Routes.RESULT) {
+            SplitResultScreen(
                 viewModel = viewModel,
-                onCalculateClicked = { calcId ->
-                    navController.navigate(Screen.Result.createRoute(calcId))
-                }
-            )
-        }
-
-        composable(
-            route = Screen.Result.route,
-            arguments = listOf(
-                navArgument("calcId") {
-                    type = NavType.StringType
-                }
-            )
-        ) { backStackEntry ->
-            val calcId = backStackEntry.arguments?.getString("calcId") ?: ""
-
-            ResultScreen(
-                calculationId = calcId,
-                viewModel = viewModel,
-                onBackToEdit = {
-                    navController.popBackStack()
-                },
                 onNewCalculation = {
-                    navController.navigate(Screen.Input.route) {
-                        popUpTo(Screen.Home.route) { inclusive = false }
-                    }
+                    viewModel.reset()
+                    navController.popBackStack(
+                        Routes.INPUT,
+                        inclusive = false
+                    )
                 }
             )
         }

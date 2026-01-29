@@ -21,21 +21,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 
-data class InputScreenState(
-    val totalAmount: String,
-    val peopleCount: String,
-    val tipPercentage: String,
-    val isCalculateEnabled: Boolean
-)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InputScreen(
-    state: InputScreenState,
-    onTotalAmountChanged: (String) -> Unit,
-    onPeopleCountChanged: (String) -> Unit,
-    onTipPercentageChanged: (String) -> Unit,
-    onCalculateClicked: () -> Unit,
+fun BillInputForm(
+    totalAmount: String,
+    peopleCount: String,
+    tipPercentage: String,
+    isCalculateEnabled: Boolean,
+    onTotalAmountChange: (String) -> Unit,
+    onPeopleCountChange: (String) -> Unit,
+    onTipPercentageChange: (String) -> Unit,
+    onCalculateClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -53,10 +49,10 @@ fun InputScreen(
         )
 
         OutlinedTextField(
-            value = state.totalAmount,
+            value = totalAmount,
             onValueChange = { newValue ->
                 if (newValue.isEmpty() || newValue.toDoubleOrNull() != null) {
-                    onTotalAmountChanged(newValue)
+                    onTotalAmountChange(newValue)
                 }
             },
             label = { Text("Сумма счета", color = Color.Red) },
@@ -67,10 +63,10 @@ fun InputScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
-            value = state.peopleCount,
+            value = peopleCount,
             onValueChange = { newValue ->
                 if (newValue.isEmpty() || newValue.toIntOrNull() != null) {
-                    onPeopleCountChanged(newValue)
+                    onPeopleCountChange(newValue)
                 }
             },
             label = { Text("Количество человек", color = Color.Red) },
@@ -81,10 +77,10 @@ fun InputScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
-            value = state.tipPercentage,
+            value = tipPercentage,
             onValueChange = { newValue ->
                 if (newValue.isEmpty() || newValue.toDoubleOrNull() != null) {
-                    onTipPercentageChanged(newValue)
+                    onTipPercentageChange(newValue)
                 }
             },
             label = { Text("Процент чая", color = Color.Red) },
@@ -94,13 +90,8 @@ fun InputScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Обновили условие валидации
-        val isCalculateEnabled = state.totalAmount.toDoubleOrNull()?.let { it > 0 } == true &&
-                state.peopleCount.toIntOrNull()?.let { it > 0 } == true &&
-                state.tipPercentage.toDoubleOrNull()?.let { it >= 0 } == true
-
         Button(
-            onClick = onCalculateClicked,
+            onClick = onCalculateClick,
             enabled = isCalculateEnabled,
             modifier = Modifier
                 .fillMaxWidth()

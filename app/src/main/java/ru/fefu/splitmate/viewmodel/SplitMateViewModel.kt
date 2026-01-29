@@ -1,117 +1,51 @@
 package ru.fefu.splitmate.viewmodel
 
 import androidx.lifecycle.ViewModel
-import ru.fefu.splitmate.model.SplitCalculation
-import ru.fefu.splitmate.model.SplitMateUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import ru.fefu.splitmate.model.SplitCalculation
+import ru.fefu.splitmate.model.UiState
 
 class SplitMateViewModel : ViewModel() {
 
-    private val _uiState = MutableStateFlow<SplitMateUiState>(SplitMateUiState.Input())
-    val uiState: StateFlow<SplitMateUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow<UiState>(UiState.Input())
+    val uiState: StateFlow<UiState> = _uiState
 
-    private val _calculations = MutableStateFlow<List<SplitCalculation>>(emptyList())
-    val calculations: StateFlow<List<SplitCalculation>> = _calculations.asStateFlow()
-
-    fun updateTotalAmount(amount: String) {
-        when (val currentState = _uiState.value) {
-            is SplitMateUiState.Input -> {
-                _uiState.update {
-                    currentState.copy(totalAmount = amount)
-                }
-            }
-            else -> {}
-        }
+    fun updateTotalAmount(value: String) {
+        val state = _uiState.value as? UiState.Input ?: return
+        _uiState.value = state.copy(totalAmount = value)
     }
 
-    fun updatePeopleCount(count: String) {
-        when (val currentState = _uiState.value) {
-            is SplitMateUiState.Input -> {
-                _uiState.update {
-                    currentState.copy(peopleCount = count)
-                }
-            }
-            else -> {}
-        }
+    fun updatePeopleCount(value: String) {
+        val state = _uiState.value as? UiState.Input ?: return
+        _uiState.value = state.copy(peopleCount = value)
     }
 
-    fun updateTipPercentage(tip: String) {
-        when (val currentState = _uiState.value) {
-            is SplitMateUiState.Input -> {
-                _uiState.update {
-                    currentState.copy(tipPercentage = tip)
-                }
-            }
-            else -> {}
-        }
+    fun updateTipPercentage(value: String) {
+        val state = _uiState.value as? UiState.Input ?: return
+        _uiState.value = state.copy(tipPercentage = value)
     }
 
-    fun calculate(): String? {
-        return when (val currentState = _uiState.value) {
-            is SplitMateUiState.Input -> {
-                try {
-                    val total = currentState.totalAmount.toDoubleOrNull() ?: return null
-                    val people = currentState.peopleCount.toIntOrNull() ?: return null
-                    val tip = currentState.tipPercentage.toDoubleOrNull() ?: return null
-
-                    if (total <= 0 || people <= 0 || tip < 0) return null
-
-                    val calculation = SplitCalculation(
-                        totalAmount = total,
-                        peopleCount = people,
-                        tipPercentage = tip
-                    )
-
-                    _calculations.update { currentList ->
-                        currentList + calculation
-                    }
-
-                    _uiState.update { SplitMateUiState.Result(calculation) }
-
-                    calculation.id
-                } catch (e: Exception) {
-                    null
-                }
-            }
-            else -> null
-        }
+    fun isCalculateEnabled(state: UiState.Input): Boolean {
+        return state.totalAmount.toDoubleOrNull()?.let { it > 0 } == true &&
+                state.peopleCount.toIntOrNull()?.let { it > 0 } == true &&
+                state.tipPercentage.toDoubleOrNull()?.let { it >= 0 } == true
     }
 
-    fun navigateToResult(calculation: SplitCalculation) {
-        if (!_calculations.value.any { it.id == calculation.id }) {
-            _calculations.update { currentList ->
-                currentList + calculation
-            }
-        }
+    fun calculate() {
+        val state = _uiState.value as? UiState.Input ?: return
+        if (!isCalculateEnabled(state)) return
 
-        _uiState.update { SplitMateUiState.Result(calculation) }
+        val calculation = SplitCalculation(
+            totalAmount = state.totalAmount.toDouble(),
+            peopleCount = state.peopleCount.toInt(),
+            tipPercentage = state.tipPercentage.toDouble()
+        )
+
+        _uiState.value = UiState.Result(calculation)
     }
 
-    fun startNewCalculation() {
-        _uiState.update { SplitMateUiState.Input() }
-    }
-
-    fun navigateToInput() {
-        when (val currentState = _uiState.value) {
-            is SplitMateUiState.Result -> {
-                _uiState.update {
-                    SplitMateUiState.Input(
-                        totalAmount = currentState.calculation.totalAmount.toString(),
-                        peopleCount = currentState.calculation.peopleCount.toString(),
-                        tipPercentage = currentState.calculation.tipPercentage.toString()
-                    )
-                }
-            }
-            else -> {
-                _uiState.update { SplitMateUiState.Input() }
-            }
-        }
-    }
-
-    fun getCalculationById(id: String): SplitCalculation? {
-        return _calculations.value.find { it.id == id }
+    fun reset() {
+        _uiState.value = UiState.Input()
     }
 }

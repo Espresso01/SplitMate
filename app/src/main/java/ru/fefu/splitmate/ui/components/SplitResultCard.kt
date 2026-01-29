@@ -22,15 +22,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ru.fefu.splitmate.model.SplitCalculation
 
-data class ResultScreenState(
-    val calculation: SplitCalculation?
-)
-
 @Composable
-fun ResultScreen(
-    state: ResultScreenState,
-    onBackToEditClicked: () -> Unit,
-    onNewCalculationClicked: () -> Unit,
+fun SplitResultCard(
+    calculation: SplitCalculation?,
+    onNewCalculationClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -40,7 +35,7 @@ fun ResultScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        state.calculation?.let { calculation ->
+        calculation?.let { calc ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -68,24 +63,24 @@ fun ResultScreen(
 
                     CalculationRow(
                         label = "Сумма счета:",
-                        value = String.format("%.2f", calculation.totalAmount)
+                        value = String.format("%.2f", calc.totalAmount)
                     )
 
                     CalculationRow(
-                        label = "Чай (${calculation.tipPercentage}%):",
-                        value = String.format("%.2f", calculation.tipAmount)
+                        label = "Чай (${calc.tipPercentage}%):",
+                        value = String.format("%.2f", calc.tipAmount)
                     )
 
                     CalculationRow(
                         label = "Итог с чаем:",
-                        value = String.format("%.2f", calculation.totalWithTip),
+                        value = String.format("%.2f", calc.totalWithTip),
                         isHighlighted = true,
                         highlightColor = Color.Red
                     )
 
                     CalculationRow(
                         label = "С каждого:",
-                        value = String.format("%.2f", calculation.perPerson),
+                        value = String.format("%.2f", calc.perPerson),
                         isHighlighted = true,
                         highlightColor = Color.Red
                     )
@@ -94,44 +89,21 @@ fun ResultScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+            Button(
+                onClick = onNewCalculationClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Red,
+                    contentColor = Color.White
+                ),
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 6.dp,
+                    pressedElevation = 3.dp
+                )
             ) {
-                Button(
-                    onClick = onBackToEditClicked,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Red,
-                        contentColor = Color.White
-                    ),
-                    elevation = ButtonDefaults.buttonElevation(
-                        defaultElevation = 6.dp,
-                        pressedElevation = 3.dp
-                    )
-                ) {
-                    Text("РЕДАКТИРОВАТЬ", style = MaterialTheme.typography.titleMedium)
-                }
-
-                Button(
-                    onClick = onNewCalculationClicked,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Red,
-                        contentColor = Color.White
-                    ),
-                    elevation = ButtonDefaults.buttonElevation(
-                        defaultElevation = 6.dp,
-                        pressedElevation = 3.dp
-                    )
-                ) {
-                    Text("НОВЫЙ СТОЛ - НОВЫЙ ЧАЙ", style = MaterialTheme.typography.titleMedium)
-                }
+                Text("НОВЫЙ СТОЛ - НОВЫЙ ЧАЙ", style = MaterialTheme.typography.titleMedium)
             }
         } ?: run {
             Text(
@@ -142,7 +114,7 @@ fun ResultScreen(
             )
 
             Button(
-                onClick = onNewCalculationClicked,
+                onClick = onNewCalculationClick,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),

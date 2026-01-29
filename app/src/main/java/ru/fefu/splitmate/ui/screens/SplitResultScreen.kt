@@ -1,31 +1,22 @@
 package ru.fefu.splitmate.ui.screens
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import ru.fefu.splitmate.model.UiState
+import ru.fefu.splitmate.ui.components.SplitResultCard
 import ru.fefu.splitmate.viewmodel.SplitMateViewModel
-import ru.fefu.splitmate.ui.components.ResultScreen
-import ru.fefu.splitmate.ui.components.ResultScreenState
 
 @Composable
-fun ResultScreen(
-    calculationId: String,
+fun SplitResultScreen(
     viewModel: SplitMateViewModel,
-    onBackToEdit: () -> Unit,
     onNewCalculation: () -> Unit
 ) {
-    val calculation = remember(calculationId) {
-        viewModel.getCalculationById(calculationId)
-    }
+    val uiState by viewModel.uiState.collectAsState()
+    val state = uiState as? UiState.Result ?: return
 
-    ResultScreen(
-        state = ResultScreenState(calculation = calculation),
-        onBackToEditClicked = {
-            viewModel.navigateToInput()
-            onBackToEdit()
-        },
-        onNewCalculationClicked = {
-            viewModel.startNewCalculation()
-            onNewCalculation()
-        }
+    SplitResultCard(
+        calculation = state.calculation,
+        onNewCalculationClick = onNewCalculation
     )
 }
